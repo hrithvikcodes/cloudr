@@ -35,15 +35,15 @@ async def song_unlike(song_id: uuid.UUID, user_id: uuid.UUID, db: AsyncSession =
     result = await unlike_song(db, song_id=song_id, user_id=user_id)
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Like not found")
-    # FIXED: Added the formatter here too so 'unlike' returns clean data
+    
     return format_liked_response(result)
 
 
 @router.get("/user/{user_id}", response_model=list[LikedOut])
 async def list_liked(user_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    # FIXED: Fetch raw SQL records first
+    
     records = await get_liked_songs(db, user_id=user_id)
-    # FIXED: Map over each item using your formatter function
+    
     return [format_liked_response(record) for record in records]
 
 
