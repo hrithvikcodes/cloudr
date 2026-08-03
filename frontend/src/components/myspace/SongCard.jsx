@@ -1,6 +1,6 @@
 import React from 'react';
 
-function SongCard({ name, artist, duration, size,onClick }) {
+function SongCard({ name, artist, duration, size,onClick, isLiked, onLikeClick }) {
   return (
     <div className='relative flex flex-col justify-between w-full p-4 sm:p-6 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl shadow-lg transition-all group cursor-pointer'>
       
@@ -12,10 +12,13 @@ function SongCard({ name, artist, duration, size,onClick }) {
         }} className='p-2 rounded-full hover:bg-zinc-800 text-zinc-400 transition-colors group/cross'>
           <i className="fa-solid fa-xmark text-zinc-400 group-hover/cross:text-white text-lg transition-colors"></i>
         </button>
-        <button
+        <button onClick={(e)=>{
+          e.stopPropagation();
+          if(onClick) onLikeClick();
+        }}
           className='p-2 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-red-500 transition-colors group/heart'>
-            <i className="fa-solid fa-heart text-zinc-400 group-hover/heart:text-red-500 text-lg transition-colors"></i>
-
+            {/*<i className={`fa-solid fa-heart transition-colors ${isLiked ? 'text-red-500': 'text-zinc-400'} group-hover/heart:text-red-500 text-lg transition-colors`}></i>*/}
+            <i className={`fa-solid fa-heart transition-colors text-lg ${isLiked ? 'text-red-500' : 'text-zinc-500'}`}></i>
         </button>
       </div>
 

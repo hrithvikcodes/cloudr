@@ -18,8 +18,53 @@ function formatFileSize(bytes) {
 function MySpace({userId}) {
   
   const [songs, setSongs] = useState([]);
-
   const [search, setSearch] = useState("");
+  const [likedIds, setLikedIds] = useState(new Set());
+
+
+  useEffect(() => {
+    const fetchLikes = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/liked/user/${userId}`, {
+          method: 'GET',
+        });
+        const data = await res.json();
+        
+        setLikedIds(new Set(data.map(song => song.song_id)));
+      } catch (error) {
+        console.error("Error fetching likes", error);
+      }
+    };
+
+    if (userId) fetchLikes();
+  }, [userId]);
+
+  
+  const toggleLike = async (songId) => {
+    const isLiked = likedIds.has(songId);
+
+    try {
+      if (isLiked) {
+        await fetch(`http://localhost:8000/liked/${songId}?user_id=${userId}`, {
+          method: 'DELETE',
+        });
+        setLikedIds(prev => {
+          const next = new Set(prev);
+          next.delete(songId);
+          return next;
+        });
+      } else {
+        
+        await fetch(`http://localhost:8000/liked/${songId}?user_id=${userId}`, {
+          method: 'POST', 
+        });
+        setLikedIds(prev => new Set(prev).add(songId));
+      }
+    } catch (error) {
+      console.error("Error toggling like state: ", error);
+    }
+  };
+
   useEffect(() => {
     const fetchSongs = async () => {
       try {
@@ -33,11 +78,11 @@ function MySpace({userId}) {
       }
     };
 
-    fetchSongs();
+    if (userId) fetchSongs();
   }, [userId]);
 
-    const handleDelete = async (songId) => {
-    if (!songId) return console.error("No songId provided"); // Ensure ID exists
+  const handleDelete = async (songId) => {
+    if (!songId) return console.error("No songId provided"); 
     try {
       const res = await fetch(`http://localhost:8000/songs/${songId}`, {
         method: 'DELETE',
@@ -45,7 +90,6 @@ function MySpace({userId}) {
       if (res.ok){
         setSongs((prevSongs) => prevSongs.filter((song) => song.id !== songId));
       } else {
-        // Log the status to see if it's a 404 or 500
         console.error(`Failed to delete song. Status: ${res.status}`);
       }
     } catch (error) {
@@ -53,20 +97,17 @@ function MySpace({userId}) {
     }
   };
 
-  
-
   const handleSearch = (e) => {
-    e.preventDefault()
-    
-  }
+    e.preventDefault();
+  };
 
-  const filteredSongs = songs.filter((song)=> {
+  const filteredSongs = songs.filter((song) => {
     const query = search.toLowerCase().trim();
     return (
       song.title?.toLowerCase().includes(query) ||
       song.artist?.toLowerCase().includes(query)
-    )
-  })
+    );
+  });
   
   return (
     <div className='flex flex-col gap-6 sm:gap-8 p-2 max-w-7xl mx-auto w-full pb-36'>
@@ -106,12 +147,13 @@ function MySpace({userId}) {
             duration={formatDuration(song.duration_seconds)}
             size={formatFileSize(song.file_size_bytes)}
             onClick={() => handleDelete(song.id)}
+            isLiked={likedIds.has(song.id)}
+            onLikeClick={() => toggleLike(song.id)}
           />
         ))}
-           
 
-           {filteredSongs.length === 0 && songs.length > 0 && (<p className='flex gap-3 text-zinc-500 text-3xl mt-2'><i className='fa-solid fa-headset text-zinc-400 text-5xl'></i>No Songs found matching your search</p>)}
-           {songs.length === 0 && (<p className='flex flex-row gap-3 text-zinc-500 text-3xl mt-2'><i className='fa-solid fa-headset text-zinc-400 text-5xl'></i>Stored songs will appear here </p>)}
+         {filteredSongs.length === 0 && songs.length > 0 && (<p className='flex gap-3 text-zinc-500 text-3xl mt-2'><i className='fa-solid fa-headset text-zinc-400 text-5xl'></i>No Songs found matching your search</p>)}
+         {songs.length === 0 && (<p className='flex flex-row gap-3 text-zinc-500 text-3xl mt-2'><i className='fa-solid fa-headset text-zinc-400 text-5xl'></i>Stored songs will appear here </p>)}
       </div>
 
     </div>

@@ -17,6 +17,17 @@ function formatFileSize(bytes) {
 function Liked({userId}) {
   const [searchLiked, setSearchLiked] = useState("");
   const [likedSongs, setLikedSongs] = useState([]);
+  
+  const toogleUnlike = async (songId) => {
+    try {
+      const res = await fetch(`http://localhost:8000/liked/${songId}?user_id=${userId}`, {
+        method: 'DELETE'
+      })
+      setLikedSongs(prev => prev.filter(song => song.song_id != songId))
+    } catch (error) {
+      console.error("Couldnt unlike song ", error)
+    }
+  }
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -61,6 +72,9 @@ function Liked({userId}) {
       console.error("Network error or Server Unreachable: ", error);
     }
   };
+  const handleLike = async (songId) => {
+
+  }
 
   return (
     <div className='flex flex-col gap-6 sm:gap-8 p-2 max-w-7xl mx-auto w-full pb-36'>
@@ -97,6 +111,8 @@ function Liked({userId}) {
             duration={formatDuration(song.duration_seconds)}
             size={formatFileSize(song.file_size_bytes)}
             onClick={() => handleDelete(song.song_id)}
+            isLiked={true}
+            onLikeClick={() => toogleUnlike(song.song_id)}
           />
         ))}
       </div>
