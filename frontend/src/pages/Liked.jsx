@@ -116,8 +116,10 @@ function Liked({userId}) {
           />
         ))}
       </div>
-
+       {filteredLikedSongs.length === 0 && (<p className='flex flex-row gap-3 text-zinc-500 text-3xl mt-2'><i className='fa-solid fa-headset text-zinc-400 text-5xl'></i>Liked songs will appear here </p>)}
     </div>
+
+    
   );
 }
 

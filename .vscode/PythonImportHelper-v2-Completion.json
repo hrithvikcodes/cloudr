@@ -951,6 +951,14 @@
         "documentation": {}
     },
     {
+        "label": "FileResponse",
+        "importPath": "fastapi.responses",
+        "description": "fastapi.responses",
+        "isExtraImport": true,
+        "detail": "fastapi.responses",
+        "documentation": {}
+    },
+    {
         "label": "create_song",
         "importPath": "app.crud.song",
         "description": "app.crud.song",
@@ -1383,7 +1391,7 @@
         "kind": 5,
         "importPath": "backend.app.routers.song",
         "description": "backend.app.routers.song",
-        "peekOfCode": "router = APIRouter(prefix=\"/songs\", tags=[\"songs\"])\nUPLOAD_DIR = \"uploads\"\n@router.post(\"/\", status_code=status.HTTP_201_CREATED, response_model=SongOut)\nasync def upload_song(\n    user_id: uuid.UUID,\n    file: UploadFile = File(...),\n    title: str | None = Form(None),\n    artist: str | None = Form(None),\n    db: AsyncSession = Depends(get_db),\n):",
+        "peekOfCode": "router = APIRouter(prefix=\"/songs\", tags=[\"songs\"])\nUPLOAD_DIR = \"uploads\"\n@router.get(\"/{song_id}/stream\")\nasync def stream_song(song_id: uuid.UUID, db: AsyncSession = Depends(get_db)):\n    song = await get_song_by_id(db, song_id)\n    if not song:\n        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"Song not found\")\n    if not os.path.exists(song.file_path):\n        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"Audio file missing on disk\")\n    return FileResponse(",
         "detail": "backend.app.routers.song",
         "documentation": {}
     },
@@ -1392,7 +1400,7 @@
         "kind": 5,
         "importPath": "backend.app.routers.song",
         "description": "backend.app.routers.song",
-        "peekOfCode": "UPLOAD_DIR = \"uploads\"\n@router.post(\"/\", status_code=status.HTTP_201_CREATED, response_model=SongOut)\nasync def upload_song(\n    user_id: uuid.UUID,\n    file: UploadFile = File(...),\n    title: str | None = Form(None),\n    artist: str | None = Form(None),\n    db: AsyncSession = Depends(get_db),\n):\n    filename = file.filename or \"\"",
+        "peekOfCode": "UPLOAD_DIR = \"uploads\"\n@router.get(\"/{song_id}/stream\")\nasync def stream_song(song_id: uuid.UUID, db: AsyncSession = Depends(get_db)):\n    song = await get_song_by_id(db, song_id)\n    if not song:\n        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"Song not found\")\n    if not os.path.exists(song.file_path):\n        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"Audio file missing on disk\")\n    return FileResponse(\n        path=song.file_path,",
         "detail": "backend.app.routers.song",
         "documentation": {}
     },

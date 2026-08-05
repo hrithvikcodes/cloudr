@@ -30,7 +30,7 @@ function App() {
           } />
           
           <Route path="/myspace" element={<MySpace userId={TEST_USER_ID} />} />
-          <Route path="/upload" element={<Upload />} />
+          <Route path="/upload" element={<Upload userId={TEST_USER_ID} />}/>
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/liked" element={<Liked userId={TEST_USER_ID} />} />
         </Routes>

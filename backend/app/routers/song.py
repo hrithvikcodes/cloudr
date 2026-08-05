@@ -4,7 +4,8 @@ import uuid
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from mutagen import File as MutagenFile
-
+from fastapi.responses import FileResponse
+import os
 from app.core.db import get_db
 from app.crud.song import create_song, get_song_by_id, get_songs_by_user, delete_song
 from app.schemas.song import SongOut
@@ -14,6 +15,20 @@ router = APIRouter(prefix="/songs", tags=["songs"])
 UPLOAD_DIR = "uploads"
 
 
+
+@router.get("/{song_id}/stream")
+async def stream_song(song_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    song = await get_song_by_id(db, song_id)
+    if not song:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Song not found")
+
+    if not os.path.exists(song.file_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audio file missing on disk")
+
+    return FileResponse(
+        path=song.file_path,
+        media_type=song.mime_type or "audio/mpeg",
+    )
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=SongOut)
 async def upload_song(
     user_id: uuid.UUID,
