@@ -14,9 +14,10 @@ function formatFileSize(bytes) {
   }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-function Liked({userId}) {
+function Liked({userId, onPlaySong}) {
   const [searchLiked, setSearchLiked] = useState("");
   const [likedSongs, setLikedSongs] = useState([]);
+  
   
   const toogleUnlike = async (songId) => {
     try {
@@ -113,6 +114,7 @@ function Liked({userId}) {
             onClick={() => handleDelete(song.song_id)}
             isLiked={true}
             onLikeClick={() => toogleUnlike(song.song_id)}
+            onPlayClick={() => onPlaySong({...song, id: song.song_id})}
           />
         ))}
       </div>

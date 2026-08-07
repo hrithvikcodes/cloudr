@@ -15,7 +15,7 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function MySpace({userId}) {
+function MySpace({userId, onPlaySong}) {
   
   const [songs, setSongs] = useState([]);
   const [search, setSearch] = useState("");
@@ -149,6 +149,7 @@ function MySpace({userId}) {
             onClick={() => handleDelete(song.id)}
             isLiked={likedIds.has(song.id)}
             onLikeClick={() => toggleLike(song.id)}
+            onPlayClick = {() => onPlaySong(song)}
           />
         ))}
 

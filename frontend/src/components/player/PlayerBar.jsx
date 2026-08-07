@@ -1,21 +1,53 @@
-import React, { useState } from "react";
-
-export default function PlayerBar() {
+import React, { useState, useRef, useEffect } from "react";
+function formatDuration(seconds) {
+  if (!seconds || isNaN(seconds)) return "0:00";
+  const totalSeconds = Math.floor(seconds);
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+export default function PlayerBar({song}) {
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  const audioRef = useRef(null);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  useEffect(()=> {
+    if(song && audioRef.current){
+      audioRef.current.play();
+    }
+  }, [song])
+
+  const togglePlay = () => {
+    if (audioRef.current?.paused) {
+      audioRef.current.play();
+    } else {
+      audioRef.current.pause();
+    }
+  }
 
   return (
     <div
       className="fixed bottom-0 left-0 right-0 z-[999] flex items-center justify-between gap-2 sm:gap-4 w-full h-16 sm:h-20 px-2 sm:px-4 bg-zinc-950 border-t border-zinc-800 text-white box-border"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
+      <audio
+        ref={audioRef}
+        src={song ? `http://localhost:8000/songs/${song.id}/stream` : undefined}
+        onPlay={() => { console.log("PLAY FIRED!"); setIsPlaying(true) }}
+        onPause={() => { console.log("PAUSE FIRED"); setIsPlaying(false) }}
+        onLoadedMetadata={()=> {setDuration(audioRef.current.duration)}}
+        onTimeUpdate={()=> {setCurrentTime(audioRef.current.currentTime)}}
+      ></audio>
       {/* Track Info */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <div className="hidden xs:flex w-9 h-9 sm:w-10 sm:h-10 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 shrink-0">
           <i className="fa-solid fa-cloud-bolt text-orange-500 text-sm sm:text-base"></i>
         </div>
         <div className="flex flex-col min-w-0">
-          <span className="font-semibold text-xs sm:text-sm truncate">Midnight City</span>
-          <span className="text-[10px] sm:text-xs text-zinc-400 truncate">M83</span>
+          <span className="font-semibold text-xs sm:text-sm truncate">{song ? song.title : "No song Playing"}</span>
+          <span className="text-[10px] sm:text-xs text-zinc-400 truncate">{song ? song.artist : "artist"}</span>
         </div>
       </div>
 
@@ -26,7 +58,7 @@ export default function PlayerBar() {
             <i className="fa-solid fa-backward-step"></i>
           </button>
           <button
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={togglePlay}
             className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 border-none cursor-pointer text-black shrink-0"
           >
             {isPlaying ? (
@@ -40,11 +72,11 @@ export default function PlayerBar() {
           </button>
         </div>
         <div className="hidden sm:flex w-full items-center gap-2 text-[9px] text-zinc-400">
-          <span className="shrink-0">1:24</span>
+          <span className="shrink-0">{formatDuration(currentTime)}</span>
           <div className="flex-1 h-[3px] bg-zinc-800 rounded-full relative min-w-0">
-            <div className="absolute top-0 left-0 h-full w-1/3 bg-orange-500 rounded-full"></div>
+            <div className="absolute top-0 left-0 h-full  bg-orange-500 rounded-full" style={{width: `${duration ? (currentTime/duration) * 100 : 0}%`}}></div>
           </div>
-          <span className="shrink-0">4:03</span>
+          <span className="shrink-0">{formatDuration(duration)}</span>
         </div>
       </div>
 
