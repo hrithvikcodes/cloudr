@@ -74,7 +74,7 @@ export default function PlayerBar({song}) {
         <div className="hidden sm:flex w-full items-center gap-2 text-[9px] text-zinc-400">
           <span className="shrink-0">{formatDuration(currentTime)}</span>
           <div className="flex-1 h-[3px] bg-zinc-800 rounded-full relative min-w-0">
-            <div className="absolute top-0 left-0 h-full  bg-orange-500 rounded-full" style={{width: `${duration ? (currentTime/duration) * 100 : 0}%`}}></div>
+            <div className="absolute top-0 left-0 h-full  bg-orange-500 rounded-full" style={{width: `${duration ? (currentTime/duration) * 100 : 0}% `}}></div>
           </div>
           <span className="shrink-0">{formatDuration(duration)}</span>
         </div>
