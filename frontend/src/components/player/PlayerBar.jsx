@@ -6,7 +6,7 @@ function formatDuration(seconds) {
   const s = totalSeconds % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
-export default function PlayerBar({song}) {
+export default function PlayerBar({song, userId}) {
   const [isPlaying, setIsPlaying] = useState(false);
   
   const audioRef = useRef(null);
@@ -17,7 +17,19 @@ export default function PlayerBar({song}) {
     if(song && audioRef.current){
       audioRef.current.play();
     }
-  }, [song])
+  }, [song?.id])
+
+  const postRecentSong = async (songId) => {
+    try {
+      const res = await fetch(`http://localhost:8000/recent/${songId}?user_id=${userId}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      console.log(data);
+    } catch (error) {
+      console.error("Error fetching recent song", error)
+    }
+  }
 
   const togglePlay = () => {
     if (audioRef.current?.paused) {
@@ -35,7 +47,7 @@ export default function PlayerBar({song}) {
       <audio
         ref={audioRef}
         src={song ? `http://localhost:8000/songs/${song.id}/stream` : undefined}
-        onPlay={() => { console.log("PLAY FIRED!"); setIsPlaying(true) }}
+        onPlay={() => { console.log("PLAY FIRED!"); setIsPlaying(true); postRecentSong(song.id) }}
         onPause={() => { console.log("PAUSE FIRED"); setIsPlaying(false) }}
         onLoadedMetadata={()=> {setDuration(audioRef.current.duration)}}
         onTimeUpdate={()=> {setCurrentTime(audioRef.current.currentTime)}}

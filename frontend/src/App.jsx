@@ -34,7 +34,7 @@ function App() {
             <div className='flex flex-col gap-8'>
               <Header />
               <LibraryStats />
-              <Recent />
+              <Recent userId={TEST_USER_ID} onPlaySong={setCurrentSong}/>
             </div>
           } />
           
@@ -46,7 +46,7 @@ function App() {
       </div>
 
       {/* Guaranteed fixed player bar */}
-      <PlayerBar song={currentSong}/>
+      <PlayerBar song={currentSong} userId={TEST_USER_ID}/>
 
     </div>
   )
