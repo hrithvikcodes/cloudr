@@ -44,7 +44,12 @@ function Recent({userId, onPlaySong}) {
               name={song.title}
               duration={formatDuration(song.duration_seconds)}
               size={formatFileSize(song.file_size_bytes)}
-              onPlayClick={() => onPlaySong({ ...song, id: song.song_id })}
+              onPlayClick={() => {
+                onPlaySong(
+                  {...song, id: song.song_id },
+                  recent.map(s => ({ ...s, id: s.song_id }))
+                );}
+              }
             />
           </div>
         ))}

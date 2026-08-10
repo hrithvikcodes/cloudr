@@ -6,12 +6,14 @@ function formatDuration(seconds) {
   const s = totalSeconds % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
-export default function PlayerBar({song, userId}) {
+export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, playForwardSong, playBackwardSong}) {
   const [isPlaying, setIsPlaying] = useState(false);
   
   const audioRef = useRef(null);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+
+ 
 
   useEffect(()=> {
     if(song && audioRef.current){
@@ -51,6 +53,7 @@ export default function PlayerBar({song, userId}) {
         onPause={() => { console.log("PAUSE FIRED"); setIsPlaying(false) }}
         onLoadedMetadata={()=> {setDuration(audioRef.current.duration)}}
         onTimeUpdate={()=> {setCurrentTime(audioRef.current.currentTime)}}
+        onEnded={()=> {console.log("End!"); onSongEnd();}}
       ></audio>
       {/* Track Info */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -66,7 +69,8 @@ export default function PlayerBar({song, userId}) {
       {/* Controls */}
       <div className="flex flex-col items-center gap-1 flex-1 max-w-[160px] sm:max-w-xs shrink-0">
         <div className="flex items-center gap-3 sm:gap-4">
-          <button className="hidden sm:inline-flex bg-transparent border-none text-zinc-300 cursor-pointer text-sm p-0">
+          <button className="hidden sm:inline-flex bg-transparent border-none text-zinc-300 cursor-pointer text-sm p-0" 
+          onClick={playBackwardSong}>
             <i className="fa-solid fa-backward-step"></i>
           </button>
           <button
@@ -79,8 +83,11 @@ export default function PlayerBar({song, userId}) {
               <i className="fa-solid fa-play text-xs ml-0.5"></i>
             )}
           </button>
-          <button className="hidden sm:inline-flex bg-transparent border-none text-zinc-300 cursor-pointer text-sm p-0">
+          <button className="hidden sm:inline-flex bg-transparent border-none text-zinc-300 cursor-pointer text-sm p-0"
+          onClick={playForwardSong}>
             <i className="fa-solid fa-forward-step"></i>
+
+            
           </button>
         </div>
         <div className="hidden sm:flex w-full items-center gap-2 text-[9px] text-zinc-400">

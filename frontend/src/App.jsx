@@ -15,6 +15,29 @@ function App() {
 
   const [currentSong, setCurrentSong] = useState(null);
 
+  const [queue, setQueue] = useState([]);
+
+  const playSong = (song, songList) => {
+      setQueue(songList);
+      setCurrentSong(song);
+  }
+
+  const playNext = async () => {
+    if (!queue || queue.length === 0) return;
+    const currentIdx = queue.findIndex((s)=> s.id == currentSong?.id);
+    
+    if (currentIdx == -1 || currentIdx == queue.length -1 ) return;
+    playSong(queue[currentIdx+1],queue);
+  }
+
+  const playPrevious = async () => {
+    if (!queue || queue.length === 0) return;
+    const currentIdx = queue.findIndex((s) => s.id == currentSong?.id);
+
+    if(currentIdx <= 0) return;
+    playSong(queue[currentIdx - 1], queue);
+  }
+
   const onPlayClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -34,19 +57,19 @@ function App() {
             <div className='flex flex-col gap-8'>
               <Header />
               <LibraryStats />
-              <Recent userId={TEST_USER_ID} onPlaySong={setCurrentSong}/>
+              <Recent userId={TEST_USER_ID} onPlaySong={playSong}/>
             </div>
           } />
           
-          <Route path="/myspace" element={<MySpace userId={TEST_USER_ID} onPlaySong ={setCurrentSong} />} />
+          <Route path="/myspace" element={<MySpace userId={TEST_USER_ID} onPlaySong ={playSong} />} />
           <Route path="/upload" element={<Upload userId={TEST_USER_ID} />}/>
           <Route path="/playlists" element={<Playlists />} />
-          <Route path="/liked" element={<Liked userId={TEST_USER_ID} onPlaySong={setCurrentSong}/>} />
+          <Route path="/liked" element={<Liked userId={TEST_USER_ID} onPlaySong={playSong}/>} />
         </Routes>
       </div>
 
       {/* Guaranteed fixed player bar */}
-      <PlayerBar song={currentSong} userId={TEST_USER_ID}/>
+      <PlayerBar song={currentSong} userId={TEST_USER_ID} queue={queue} onSongEnd={playNext} playForwardSong={playNext} playBackwardSong={playPrevious}/>
 
     </div>
   )

@@ -114,7 +114,7 @@ function Liked({userId, onPlaySong}) {
             onClick={() => handleDelete(song.song_id)}
             isLiked={true}
             onLikeClick={() => toogleUnlike(song.song_id)}
-            onPlayClick={() => onPlaySong({...song, id: song.song_id})}
+            onPlayClick={() => onPlaySong({ ...song, id: song.song_id }, filteredLikedSongs.map(s => ({ ...s, id: s.song_id })))}
           />
         ))}
       </div>

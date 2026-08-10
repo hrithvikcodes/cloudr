@@ -149,7 +149,7 @@ function MySpace({userId, onPlaySong}) {
             onClick={() => handleDelete(song.id)}
             isLiked={likedIds.has(song.id)}
             onLikeClick={() => toggleLike(song.id)}
-            onPlayClick = {() => onPlaySong(song)}
+            onPlayClick = {() => onPlaySong(song, filteredSongs)}
           />
         ))}
 
