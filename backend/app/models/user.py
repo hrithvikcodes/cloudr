@@ -10,8 +10,9 @@ if TYPE_CHECKING:
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    username: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(100), nullable=True)
 
     songs: Mapped[List["Song"]] = relationship(back_populates="user")
     liked_songs: Mapped[List["Liked"]] = relationship(back_populates="user")

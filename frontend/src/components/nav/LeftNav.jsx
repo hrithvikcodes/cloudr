@@ -1,7 +1,7 @@
 import React from 'react'
 import NavItem from './NavItem.jsx'
 
-function LeftNav() {
+function LeftNav({onLogout}) {
   return (
     <div className='flex flex-col h-auto lg:h-dvh w-full lg:w-64 xl:w-72 shrink-0'>
         <div className='flex flex-col h-auto lg:h-[calc(100dvh-3rem)] w-full bg-zinc-900 m-0 lg:m-6 rounded-none lg:rounded-3xl p-4 lg:p-0'>
@@ -15,7 +15,8 @@ function LeftNav() {
                 <NavItem name={"My Space"} icon={"fa-solid fa-earth-americas"} to={"/myspace"}/>
                 <NavItem name={"Upload"} icon={"fa-solid fa-upload"} to={"/upload"}/>
                 <NavItem name={"Playlists"} icon={"fa-solid fa-music"} to={"playlists"}/>
-                <NavItem name={"Liked"} icon={"fa-solid fa-house"} to={"liked"}/>
+                <NavItem name={"Liked"} icon={"fa-solid fa-heart"} to={"liked"}/>
+                <NavItem name={"Logout"} icon={"fa-solid fa-right-from-bracket"} to={"login"} onClick={onLogout}/>
             </div>
         </div>
     </div>
