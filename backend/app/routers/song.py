@@ -1,73 +1,68 @@
-# app/routers/song.py
+
+from app.core.config import settings
 import os
 import uuid
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from fastapi import APIRouter, Depends,  HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from mutagen import File as MutagenFile
-from fastapi.responses import FileResponse
 import os
 from app.core.db import get_db
 from app.crud.song import create_song, get_song_by_id, get_songs_by_user, delete_song
 from app.schemas.song import SongOut
+from app.schemas.song import PresignUploadResponse, PresignUploadRequest, ConfirmUploadRequest
+from app.core.r2 import r2_client
+from app.core.r2 import R2_BUCKET_NAME
 
 router = APIRouter(prefix="/songs", tags=["songs"])
 
-UPLOAD_DIR = "uploads"
+@router.post("/presign-upload", response_model=PresignUploadResponse)
+async def presign_upload(payload: PresignUploadRequest, user_id:uuid.UUID, db: AsyncSession = Depends(get_db)):
+    
+    ext = os.path.splitext(payload.filename)[1]
+    key = f"songs/{user_id}/{uuid.uuid4()}{ext}"
 
+    upload_url = r2_client.generate_presigned_url(
+        "put_object",
+        Params={
+            'Bucket': settings.R2_BUCKET_NAME,
+            'Key': key,
+            'ContentType': payload.content_type,
+        },
+        ExpiresIn = 300,
+    )
+    return {'upload_url':upload_url, 'key': key}
+@router.post("/confirm-upload", response_model=SongOut)
+async def confirm_upload(payload: ConfirmUploadRequest, user_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
 
+    try: 
+        head = r2_client.head_object(Bucket = R2_BUCKET_NAME, Key= payload.key)
+    except r2_client.exceptions.ClientError: 
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Upload not found")
+    file_size_bytes = head["ContentLength"]
+    final_title = payload.title or os.path.splitext(os.path.basename(payload.key))[0]
 
+    song = await create_song(
+        db=db,
+        user_id=user_id,
+        title=final_title,
+        artist=payload.artist,
+        duration_seconds=payload.duration_seconds,  
+        file_size_bytes=file_size_bytes,
+        file_path=payload.key,  
+        mime_type=payload.content_type,
+    )
+    return song
 @router.get("/{song_id}/stream")
 async def stream_song(song_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     song = await get_song_by_id(db, song_id)
     if not song:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Song not found")
 
-    if not os.path.exists(song.file_path):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audio file missing on disk")
-
-    return FileResponse(
-        path=song.file_path,
-        media_type=song.mime_type or "audio/mpeg",
+    url = r2_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": settings.R2_BUCKET_NAME, "Key": song.file_path},
+        ExpiresIn = 3600,
     )
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=SongOut)
-async def upload_song(
-    user_id: uuid.UUID,
-    file: UploadFile = File(...),
-    title: str | None = Form(None),
-    artist: str | None = Form(None),
-    db: AsyncSession = Depends(get_db),
-):
-    filename = file.filename or ""
-    ext = os.path.splitext(filename)[1]
-    unique_name = f"{uuid.uuid4()}{ext}"
-    save_path = os.path.join(UPLOAD_DIR, unique_name)
-
-    contents = await file.read()
-    with open(save_path, "wb") as f:
-        f.write(contents)
-
-    file_size_bytes = len(contents)
-
-    audio = MutagenFile(save_path)
-    if audio is None or audio.info is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not read audio file")
-    duration_seconds = int(audio.info.length)
-
-    filename = file.filename or ""
-    final_title = title or os.path.splitext(filename)[0]
-
-    song = await create_song(
-        db=db,
-        user_id=user_id,
-        title=final_title,
-        artist=artist,
-        duration_seconds=duration_seconds,
-        file_size_bytes=file_size_bytes,
-        file_path=save_path,
-        mime_type=file.content_type,
-    )
-    return song
-
+    return {"url": url}
 
 @router.get("/{song_id}", response_model=SongOut)
 async def get_song(song_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
@@ -88,4 +83,8 @@ async def remove_song(song_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     deleted_song = await delete_song(db, song_id)
     if not deleted_song:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Song not found")
+    try:
+        r2_client.delete_object(Bucket=R2_BUCKET_NAME, Key=deleted_song.file_path)
+    except Exception:
+        pass
     return deleted_song

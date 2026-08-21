@@ -9,17 +9,35 @@ function Signup() {
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
-      e.preventDefault();
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        
-      })
-      if (error) alert(error.message); 
-      else {
-        navigate('/');
-      }
-    }
+  e.preventDefault();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  // Supabase Auth succeeded — now create the matching row in our own users table
+  const res = await fetch('http://localhost:8000/user/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: data.user.id,
+      email: data.user.email,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Account created but profile setup failed: ' + err.detail);
+    return;
+  }
+
+  navigate('/');
+};
   
     
   return (

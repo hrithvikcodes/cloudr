@@ -2,10 +2,11 @@ import uuid
 from pydantic import BaseModel, ConfigDict
 
 class UserBase(BaseModel):
-    username: str
+    username: str | None = None
 
 class UserCreate(UserBase):
-    pass
+    id: uuid.UUID
+    email: str
 
 class UserOut(UserBase):
     id: uuid.UUID

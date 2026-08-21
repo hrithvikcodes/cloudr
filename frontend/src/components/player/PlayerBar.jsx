@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+
 function formatDuration(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
   const totalSeconds = Math.floor(seconds);
@@ -6,20 +7,47 @@ function formatDuration(seconds) {
   const s = totalSeconds % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
+
 export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, playForwardSong, playBackwardSong}) {
   const [isPlaying, setIsPlaying] = useState(false);
-  
+  const [streamUrl, setStreamUrl] = useState(null);
+
   const audioRef = useRef(null);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
 
- 
+  
+  useEffect(() => {
+    if (!song) {
+      setStreamUrl(null);
+      return;
+    }
 
-  useEffect(()=> {
-    if(song && audioRef.current){
+    let cancelled = false;
+
+    const loadStreamUrl = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/songs/${song.id}/stream`);
+        const data = await res.json();
+        if (!cancelled) {
+          setStreamUrl(data.url);
+        }
+      } catch (error) {
+        console.error("Failed to fetch stream url", error);
+      }
+    };
+
+    loadStreamUrl();
+
+    return () => { cancelled = true; };
+  }, [song?.id]);
+
+  
+  useEffect(() => {
+    if (streamUrl && audioRef.current) {
       audioRef.current.play();
     }
-  }, [song?.id])
+  }, [streamUrl]);
 
   const postRecentSong = async (songId) => {
     try {
@@ -48,13 +76,14 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
     >
       <audio
         ref={audioRef}
-        src={song ? `http://localhost:8000/songs/${song.id}/stream` : undefined}
-        onPlay={() => { console.log("PLAY FIRED!"); setIsPlaying(true); postRecentSong(song.id) }}
-        onPause={() => { console.log("PAUSE FIRED"); setIsPlaying(false) }}
+        src={streamUrl || undefined}
+        onPlay={() => { setIsPlaying(true); if (song) postRecentSong(song.id); }}
+        onPause={() => { setIsPlaying(false) }}
         onLoadedMetadata={()=> {setDuration(audioRef.current.duration)}}
         onTimeUpdate={()=> {setCurrentTime(audioRef.current.currentTime)}}
-        onEnded={()=> {console.log("End!"); onSongEnd();}}
+        onEnded={()=> { onSongEnd(); }}
       ></audio>
+
       {/* Track Info */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <div className="hidden xs:flex w-9 h-9 sm:w-10 sm:h-10 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 shrink-0">
@@ -86,8 +115,6 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
           <button className="hidden sm:inline-flex bg-transparent border-none text-zinc-300 cursor-pointer text-sm p-0"
           onClick={playForwardSong}>
             <i className="fa-solid fa-forward-step"></i>
-
-            
           </button>
         </div>
         <div className="hidden sm:flex w-full items-center gap-2 text-[9px] text-zinc-400">

@@ -17,7 +17,20 @@ class SongCreate(SongBase):
     # NOTE: file_path/file_size_bytes/duration_seconds will move to
     # server-derived values once real file upload is built — fine for now
     # since you're testing with manual inserts.
+class PresignUploadRequest(BaseModel):
+    filename: str
+    content_type: str
 
+class PresignUploadResponse(BaseModel):
+    upload_url: str
+    key: str
+
+class ConfirmUploadRequest(BaseModel):
+    key: str
+    title: str | None = None
+    artist: str | None = None
+    duration_seconds: int
+    content_type: str
 class SongOut(SongBase):
     id: uuid.UUID
     user_id: uuid.UUID

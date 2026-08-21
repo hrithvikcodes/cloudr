@@ -2,35 +2,83 @@ import React, { useState } from 'react';
 import StorageCard from '../components/header/storage/StorageCard';
 import QueueCard from '../components/queue/QueueCard';
 import SmartClassifyToggle from '../components/smart_classify/SmartClassifyToggle';
-const userId = "308cfac0-6235-4880-919a-be76686247e7";
 
-function Upload() {
+
+function Upload({userId, token}) {
   const [smartClassify, setSmartClassify] = useState(false);
   const [upload, setUpload] = useState([]);
   
   const allowedExtensions = ['.mp3', '.wav', '.aiff', '.flac', '.alac', '.aac', '.ogg'];
 
+  const getAudioDuration = (file) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      audio.onloadedmetadata = () => {
+      URL.revokeObjectURL(audio.src);
+      resolve(Math.round(audio.duration));
+    };
+      audio.onerror = () => reject(new Error('Could not read audio metadata'));
+      audio.src = URL.createObjectURL(file);
+    });
+  };
+
   const uploadSong = async (file) => {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const cleanTitle = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-      formData.append('title', cleanTitle);
-      formData.append('artist', '');
+      const presignRes = await fetch(`http://localhost:8000/songs/presign-upload?user_id=${userId}`,{
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          filename: file.name,
+          content_type: file.type,
+        })
+      });
 
-      const res = await fetch(`http://localhost:8000/songs?user_id=${userId}`, { 
-       method: 'POST', 
-         body: formData 
-       });
-
-      if (res.ok) {
-        const data = await res.json();
-        console.log("Upload success:", data);
-        setUpload((prev) => [...prev, { name: file.name, title: cleanTitle, id: data.id || Date.now() }]);
-      } else {
-        console.error("Upload failed server error:", res.statusText);
+      if(!presignRes.ok){
+        console.error("Presign failed: ", presignRes.statusText);
+        return;
       }
+
+      const { upload_url, key} = await presignRes.json();
+
+      const putRes = await fetch(upload_url, {
+        method: 'PUT',
+        headers: {
+          'Content-type': file.type,
+          
+        },
+        body: file,
+        
+      });
+
+      if(!putRes.ok) {
+        console.error("R2 upload failed", putRes.statusText);
+        return;
+      }
+
+      const cleanTitle = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      const durationSeconds = await getAudioDuration(file);
+
+      const confirmRes = await fetch(`http://localhost:8000/songs/confirm-upload?user_id=${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          key: key,
+          title: cleanTitle,
+          artist: '',
+          duration_seconds: durationSeconds,
+          content_type: file.type,
+        })
+      })
+
+      if (confirmRes.ok) {
+        const data = await confirmRes.json();
+        console.log("Upload success:", data);
+        setUpload((prev) => [...prev, { name: file.name, title: cleanTitle, id: data.id }]);
+      } else {
+         console.error("Confirm failed:", confirmRes.statusText);
+      }
+
     } catch (error) {
       console.error("Network communication failure:", error);
     }
