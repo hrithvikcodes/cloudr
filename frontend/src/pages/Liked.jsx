@@ -14,15 +14,18 @@ function formatFileSize(bytes) {
   }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-function Liked({userId, onPlaySong}) {
+function Liked({userId, onPlaySong, token}) {
   const [searchLiked, setSearchLiked] = useState("");
   const [likedSongs, setLikedSongs] = useState([]);
   
   
   const toogleUnlike = async (songId) => {
     try {
-      const res = await fetch(`http://localhost:8000/liked/${songId}?user_id=${userId}`, {
-        method: 'DELETE'
+      const res = await fetch(`http://localhost:8000/liked/${songId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       })
       setLikedSongs(prev => prev.filter(song => song.song_id != songId))
     } catch (error) {
@@ -46,8 +49,11 @@ function Liked({userId, onPlaySong}) {
 
     const fetchLikedSongs = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/liked/user/${userId}`, {
+        const res = await fetch(`http://localhost:8000/liked/user/me`, {
           method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
         const data = await res.json();
         setLikedSongs(data);
@@ -56,13 +62,16 @@ function Liked({userId, onPlaySong}) {
       }
     };
     fetchLikedSongs();
-  }, [userId]);
+  }, [userId, token]);
 
   const handleDelete = async (songId) => {
     if (!songId) return console.error("No songId provided");
     try {
       const res = await fetch(`http://localhost:8000/songs/${songId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       if (res.ok) {
         setLikedSongs((prevSongs) => prevSongs.filter((song) => song.song_id !== songId));
@@ -73,9 +82,7 @@ function Liked({userId, onPlaySong}) {
       console.error("Network error or Server Unreachable: ", error);
     }
   };
-  const handleLike = async (songId) => {
-
-  }
+  
 
   return (
     <div className='flex flex-col gap-6 sm:gap-8 p-2 max-w-7xl mx-auto w-full pb-36'>

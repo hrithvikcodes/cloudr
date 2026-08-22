@@ -13,6 +13,8 @@ router = APIRouter(prefix="/user",tags=["user"])
 
 @router.post("/signup",status_code=status.HTTP_201_CREATED, response_model=UserOut)
 async def signup(data: UserCreate , db: AsyncSession = Depends(get_db)):
+    if data.username is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Username is required")
     db_user = await get_user_by_username(db, data.username)
     if (db_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Already registered")

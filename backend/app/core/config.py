@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     R2_SECRET_ACCESS_KEY: str
     R2_BUCKET_NAME: str
     R2_TOKEN_VALUE: str
+    SUPABSE_JWT_SECRET: str
+    SUPABASE_JWKS_URL: str
 
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

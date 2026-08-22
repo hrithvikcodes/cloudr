@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import bgImage from '../assets/login-bg.png'; // Adjust extension if needed
+import bgImage from '../assets/login-bg.png'; 
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient'
 
@@ -20,7 +20,7 @@ function Signup() {
     return;
   }
 
-  // Supabase Auth succeeded — now create the matching row in our own users table
+  
   const res = await fetch('http://localhost:8000/user/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

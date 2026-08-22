@@ -95,14 +95,14 @@ function App() {
       {/* Left Navigation */}
       {!isAuthPage && <LeftNav onLogout={handleLogout}/>}
 
-      {/* Main Content Area with safe bottom spacing for the fixed player bar */}
+      {/* Main Content Area  */}
       <div className='flex-1 flex flex-col p-4 sm:p-6 lg:p-8 pb-32 lg:pb-36 min-w-0'>
         <Routes>
           <Route path="/" element={ userId ? (
             <div className='flex flex-col gap-8'>
               <Header />
               <LibraryStats />
-              <Recent userId={userId} onPlaySong={playSong}/>
+              <Recent userId={userId} onPlaySong={playSong} token={accessToken}/>
             </div>) : <Navigate to="/login" replace/>
           } />
           
@@ -117,7 +117,7 @@ function App() {
       </div>
 
       {/* fixed player */}
-      {!isAuthPage && <PlayerBar song={currentSong} userId={userId} queue={queue} onSongEnd={playNext} playForwardSong={playNext} playBackwardSong={playPrevious}/>}
+      {!isAuthPage && <PlayerBar song={currentSong} userId={userId} token={accessToken} queue={queue} onSongEnd={playNext} playForwardSong={playNext} playBackwardSong={playPrevious}/>}
 
     </div>
   )

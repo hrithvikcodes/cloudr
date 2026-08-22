@@ -15,7 +15,7 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function MySpace({userId, onPlaySong}) {
+function MySpace({userId, token, onPlaySong}) {
   
   const [songs, setSongs] = useState([]);
   const [search, setSearch] = useState("");
@@ -25,8 +25,11 @@ function MySpace({userId, onPlaySong}) {
   useEffect(() => {
     const fetchLikes = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/liked/user/${userId}`, {
+        const res = await fetch(`http://localhost:8000/liked/user/me`, {
           method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
         });
         const data = await res.json();
         
@@ -36,8 +39,8 @@ function MySpace({userId, onPlaySong}) {
       }
     };
 
-    if (userId) fetchLikes();
-  }, [userId]);
+    if (userId && token) fetchLikes();
+  }, [userId, token]);
 
   
   const toggleLike = async (songId) => {
@@ -45,8 +48,11 @@ function MySpace({userId, onPlaySong}) {
 
     try {
       if (isLiked) {
-        await fetch(`http://localhost:8000/liked/${songId}?user_id=${userId}`, {
+        await fetch(`http://localhost:8000/liked/${songId}`, {
           method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
         });
         setLikedIds(prev => {
           const next = new Set(prev);
@@ -55,8 +61,11 @@ function MySpace({userId, onPlaySong}) {
         });
       } else {
         
-        await fetch(`http://localhost:8000/liked/${songId}?user_id=${userId}`, {
+        await fetch(`http://localhost:8000/liked/${songId}`, {
           method: 'POST', 
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
         });
         setLikedIds(prev => new Set(prev).add(songId));
       }
@@ -68,24 +77,39 @@ function MySpace({userId, onPlaySong}) {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/songs/user/${userId}`, {
+        const res = await fetch(`http://localhost:8000/songs/user/me`, {
           method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
         });
+
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null);
+          console.error("Failed to fetch songs:", res.status, errBody);
+          setSongs([]);
+          return;
+        }
+
         const data = await res.json();
         setSongs(data);
       } catch (error) {
         console.error('Error fetching songs:', error);
+        setSongs([]);
       }
     };
 
-    if (userId) fetchSongs();
-  }, [userId]);
+    if (userId && token) fetchSongs();
+  }, [userId, token]);
 
   const handleDelete = async (songId) => {
     if (!songId) return console.error("No songId provided"); 
     try {
       const res = await fetch(`http://localhost:8000/songs/${songId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
       });
       if (res.ok){
         setSongs((prevSongs) => prevSongs.filter((song) => song.id !== songId));

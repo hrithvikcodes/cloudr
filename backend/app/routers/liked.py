@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
 from app.crud.liked import get_liked_songs, like_song, check_song_liked, unlike_song
 from app.schemas.liked import LikedOut
+from app.core.auth import get_current_user
 
 router = APIRouter(prefix="/liked", tags=["Liked"])
 
@@ -22,32 +23,30 @@ def format_liked_response(record) -> dict:
         "mime_type": record.song.mime_type
     }
 
+
 @router.post("/{song_id}", status_code=status.HTTP_201_CREATED, response_model=LikedOut | dict)
-async def song_like(song_id: uuid.UUID, user_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await like_song(db, song_id=song_id, user_id=user_id)
+async def song_like(song_id: uuid.UUID, current_user: str = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await like_song(db, song_id=song_id, user_id=uuid.UUID(current_user))
     if not result:
         return {"detail": "Already liked"}
     return format_liked_response(result)
 
 
 @router.delete("/{song_id}", response_model=LikedOut)
-async def song_unlike(song_id: uuid.UUID, user_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await unlike_song(db, song_id=song_id, user_id=user_id)
+async def song_unlike(song_id: uuid.UUID, current_user: str = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await unlike_song(db, song_id=song_id, user_id=uuid.UUID(current_user))
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Like not found")
-    
     return format_liked_response(result)
 
 
-@router.get("/user/{user_id}", response_model=list[LikedOut])
-async def list_liked(user_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    
-    records = await get_liked_songs(db, user_id=user_id)
-    
+@router.get("/user/me", response_model=list[LikedOut])
+async def list_liked(current_user: str = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    records = await get_liked_songs(db, user_id=uuid.UUID(current_user))
     return [format_liked_response(record) for record in records]
 
 
 @router.get("/check/{song_id}")
-async def is_liked(song_id: uuid.UUID, user_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await check_song_liked(db, song_id=song_id, user_id=user_id)
+async def is_liked(song_id: uuid.UUID, current_user: str = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await check_song_liked(db, song_id=song_id, user_id=uuid.UUID(current_user))
     return {"liked": bool(result)}

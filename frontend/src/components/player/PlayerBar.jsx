@@ -8,7 +8,7 @@ function formatDuration(seconds) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, playForwardSong, playBackwardSong}) {
+export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, playForwardSong, playBackwardSong, token}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [streamUrl, setStreamUrl] = useState(null);
 
@@ -27,7 +27,11 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
 
     const loadStreamUrl = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/songs/${song.id}/stream`);
+        const res = await fetch(`http://localhost:8000/songs/${song.id}/stream`,{
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const data = await res.json();
         if (!cancelled) {
           setStreamUrl(data.url);
@@ -40,7 +44,7 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
     loadStreamUrl();
 
     return () => { cancelled = true; };
-  }, [song?.id]);
+  }, [song?.id, token]);
 
   
   useEffect(() => {
@@ -51,11 +55,14 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
 
   const postRecentSong = async (songId) => {
     try {
-      const res = await fetch(`http://localhost:8000/recent/${songId}?user_id=${userId}`, {
-        method: 'POST'
+      const res = await fetch(`http://localhost:8000/recent/${songId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       const data = await res.json();
-      console.log(data);
+      
     } catch (error) {
       console.error("Error fetching recent song", error)
     }

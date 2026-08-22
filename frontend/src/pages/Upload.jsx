@@ -25,9 +25,13 @@ function Upload({userId, token}) {
 
   const uploadSong = async (file) => {
     try {
-      const presignRes = await fetch(`http://localhost:8000/songs/presign-upload?user_id=${userId}`,{
+      const presignRes = await fetch(`http://localhost:8000/songs/presign-upload`,{
         method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        
+        },
         body: JSON.stringify({
           filename: file.name,
           content_type: file.type,
@@ -59,9 +63,9 @@ function Upload({userId, token}) {
       const cleanTitle = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
       const durationSeconds = await getAudioDuration(file);
 
-      const confirmRes = await fetch(`http://localhost:8000/songs/confirm-upload?user_id=${userId}`, {
+      const confirmRes = await fetch(`http://localhost:8000/songs/confirm-upload`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json', 'Authorization':`Bearer ${token}` },
         body: JSON.stringify({
           key: key,
           title: cleanTitle,
@@ -73,7 +77,7 @@ function Upload({userId, token}) {
 
       if (confirmRes.ok) {
         const data = await confirmRes.json();
-        console.log("Upload success:", data);
+        
         setUpload((prev) => [...prev, { name: file.name, title: cleanTitle, id: data.id }]);
       } else {
          console.error("Confirm failed:", confirmRes.statusText);
@@ -100,9 +104,9 @@ function Upload({userId, token}) {
         const isAudio = allowedExtensions.some(ext => file_name.endsWith(ext));
 
         if (isAudio) {
-          console.log("Accepted audio file:", file.name);
+          
           uploadSong(file)
-          // Proceed with upload logic for valid audio track here
+          
         } else {
           console.warn(`Rejected invalid file format: ${file.name}`);
         }
@@ -116,12 +120,12 @@ function Upload({userId, token}) {
       for (let i = 0; i < el.files.length; i++) {
         const file = el.files[i];
       const file_name = file.name.toLowerCase();
-      //  Reuses the extension validation check
+      
       const isAudio = allowedExtensions.some(ext => file_name.endsWith(ext));
 
       if (isAudio) {
         console.log("Accepted audio file via browser:", file.name);
-        uploadSong(file); //  Triggers the upload request
+        uploadSong(file); 
       } else {
         console.warn(`Rejected invalid file format: ${file.name}`);
       }

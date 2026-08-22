@@ -12,15 +12,18 @@ function formatFileSize(bytes) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-function Recent({userId, onPlaySong}) {
+function Recent({userId, onPlaySong, token}) {
     const [recent, setRecent] = useState([]);
 
 
     useEffect(() => {
         const fetchRecents = async () => {
             try {
-                const res = await fetch(`http://localhost:8000/recent/songs?user_id=${userId}`,{
+                const res = await fetch(`http://localhost:8000/recent/songs`,{
                     method: 'GET',
+                    headers: {
+                      'Authorization': `Bearer ${token}`
+                    }
                 });
                 const data = await res.json();
 
@@ -31,7 +34,7 @@ function Recent({userId, onPlaySong}) {
             }
         };
         if (userId) fetchRecents();
-    },[userId])
+    },[userId, token])
   return (
     <div className='flex flex-col p-4 sm:p-6'>
         <h3 className='text-2xl sm:text-3xl font-medium text-white mb-6'>Recent</h3>
