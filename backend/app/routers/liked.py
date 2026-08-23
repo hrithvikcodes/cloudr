@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_db
-from app.crud.liked import get_liked_songs, like_song, check_song_liked, unlike_song
+from app.crud.liked import get_liked_songs, like_song, check_song_liked, unlike_song, count_liked_songs
 from app.schemas.liked import LikedOut
 from app.core.auth import get_current_user
 
@@ -50,3 +50,12 @@ async def list_liked(current_user: str = Depends(get_current_user), db: AsyncSes
 async def is_liked(song_id: uuid.UUID, current_user: str = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     result = await check_song_liked(db, song_id=song_id, user_id=uuid.UUID(current_user))
     return {"liked": bool(result)}
+
+
+@router.get("/count")
+async def get_liked_count(
+    current_user: str = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    count = await count_liked_songs(db, uuid.UUID(current_user))
+    return {"count": count}

@@ -2,8 +2,7 @@ from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 from app.models.song import Song
-
-
+from app.models.liked import Liked
 async def create_song(
         db: AsyncSession,
         user_id: uuid.UUID,
@@ -52,5 +51,13 @@ async def get_user_storage(db:AsyncSession, user_id: uuid.UUID):
         select(func.coalesce(func.sum(Song.file_size_bytes), 0)).where(Song.user_id == user_id)
     )
     return result.scalar_one_or_none()
+
+async def count_songs_by_user(db: AsyncSession, user_id: uuid.UUID) -> int:
+    result = await db.execute(
+        select(func.count()).select_from(Song).where(Song.user_id == user_id)
+    )
+    return result.scalar_one()
+
+
 
     

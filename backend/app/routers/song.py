@@ -5,7 +5,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
-from app.crud.song import create_song, get_song_by_id, get_songs_by_user, delete_song, get_user_storage
+from app.crud.song import create_song, get_song_by_id, get_songs_by_user, delete_song, get_user_storage, count_songs_by_user
 from app.schemas.song import SongOut
 from app.schemas.song import PresignUploadResponse, PresignUploadRequest, ConfirmUploadRequest
 from app.core.r2 import r2_client
@@ -151,3 +151,13 @@ async def get_my_storage(db:AsyncSession=Depends(get_db), current_user: str = De
         "used_bytes": used_bytes,
         "limit_bytes": settings.MAX_STORAGE_BYTES,
     }
+
+
+
+@router.get("/count/me")
+async def get_song_count(
+    current_user: str = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    count = await count_songs_by_user(db, uuid.UUID(current_user))
+    return {"count": count}

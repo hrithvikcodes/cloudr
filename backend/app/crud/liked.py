@@ -1,6 +1,6 @@
 
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 from app.models.liked import Liked
@@ -48,6 +48,11 @@ async def check_song_liked(db: AsyncSession, song_id: uuid.UUID, user_id: uuid.U
     result = await db.execute(liked_check_query)
     return result.scalar_one_or_none()
 
+async def count_liked_songs(db: AsyncSession, user_id: uuid.UUID) -> int:
+    result = await db.execute(
+        select(func.count()).select_from(Liked).where(Liked.user_id == user_id)
+    )
+    return result.scalar_one()
 
 
 

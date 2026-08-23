@@ -6,6 +6,7 @@ import { supabase } from '../supabaseClient'
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [checkEmailMessage, setCheckEmailMessage] = useState(false); 
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
@@ -36,9 +37,41 @@ function Signup() {
     return;
   }
 
+ 
+  if (!data.session) {
+    
+    setCheckEmailMessage(true);
+    return;
+  }
+
   navigate('/');
 };
-  
+
+ 
+  if (checkEmailMessage) {
+    return (
+      <div className="h-screen w-screen overflow-hidden text-white flex flex-col md:flex-row">
+        <div className="hidden md:block md:flex-1 relative h-full">
+          <img src={bgImage} alt="Cloudr background" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
+        <div className="flex-1 h-full flex items-center justify-center p-6">
+          <div className="w-full max-w-sm sm:max-w-md px-4 sm:px-0 text-center">
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <i className="fa-brands fa-soundcloud text-[#ff7a00] text-4xl"></i>
+              <h1 className="text-3xl font-bold tracking-wide">Cloudr</h1>
+            </div>
+            <i className="fa-solid fa-envelope-circle-check text-[#ff7a00] text-5xl mb-4"></i>
+            <h2 className="text-2xl font-semibold mb-2">Check your email</h2>
+            <p className="text-neutral-400">
+              We've sent a confirmation link to <span className="text-white">{email}</span>.
+              Click it to activate your account, then log in.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
     
   return (
     <div className="h-screen w-screen overflow-hidden  text-white flex flex-col md:flex-row">
@@ -56,7 +89,7 @@ function Signup() {
       <div className="flex-1 h-full flex items-center justify-center p-6">
         <div className="w-full max-w-sm sm:max-w-md px-4 sm:px-0">
           
-          {/* Header / Brand */}
+          {/* Header  */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <i className="fa-brands fa-soundcloud text-[#ff7a00] text-4xl"></i>
             <h1 className="text-3xl font-bold tracking-wide">Cloudr</h1>
@@ -106,7 +139,7 @@ function Signup() {
           {/* Footer Link */}
           <p className="text-sm text-center text-neutral-400 mt-6">
             Already have an account?{' '}
-            <a href="#" className="text-[#ff7a00] hover:underline font-medium">
+            <a href="http://localhost:5173/login" className="text-[#ff7a00] hover:underline font-medium">
               Log in
             </a>
           </p>

@@ -24,6 +24,15 @@ function Upload({token}) {
   };
 
   const uploadSong = async (file) => {
+    const tempId = crypto.randomUUID();
+    const cleanTitle = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+
+    setUpload((prev) => [...prev, { id: tempId, title: cleanTitle, status: 'uploading' }]);
+
+    const updateStatus = (status) => {
+      setUpload((prev) => prev.map((u) => u.id === tempId ? { ...u, status } : u));
+    };
+
     try {
       const presignRes = await fetch(`http://localhost:8000/songs/presign-upload`,{
         method: 'POST',
@@ -43,6 +52,7 @@ function Upload({token}) {
         const errBody = await presignRes.json().catch(()=> null);
         console.error("Presign failed: ", presignRes.status, errBody);
         alert(errBody?.detail || 'Upload failed. Please try again');
+        updateStatus('error');
         return;
       }
 
@@ -60,10 +70,10 @@ function Upload({token}) {
 
       if(!putRes.ok) {
         console.error("R2 upload failed", putRes.statusText);
+        updateStatus('error');
         return;
       }
 
-      const cleanTitle = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
       const durationSeconds = await getAudioDuration(file);
 
       const confirmRes = await fetch(`http://localhost:8000/songs/confirm-upload`, {
@@ -79,15 +89,15 @@ function Upload({token}) {
       })
 
       if (confirmRes.ok) {
-        const data = await confirmRes.json();
-        
-        setUpload((prev) => [...prev, { name: file.name, title: cleanTitle, id: data.id }]);
+        updateStatus('done');
       } else {
          console.error("Confirm failed:", confirmRes.statusText);
+         updateStatus('error');
       }
 
     } catch (error) {
       console.error("Network communication failure:", error);
+      updateStatus('error');
     }
   };
 
