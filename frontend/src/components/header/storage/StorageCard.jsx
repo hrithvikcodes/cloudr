@@ -1,8 +1,38 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
-function StorageCard({ usedGB = 1.2, totalGB = 2.0 }) {
-  const percentage = Math.min(Math.round((usedGB / totalGB) * 100), 100);
+function StorageCard({ token}) {
+  
 
+  const [storage, setStorage] = useState({used_bytes: 0, limit_bytes: 0});
+
+
+  useEffect(()=> {
+    const fetchStorage = async () => {
+    try {  
+      const res = await fetch(`http://localhost:8000/songs/storage/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+      const data = await res.json();
+      setStorage(data);
+    } catch (error) {
+      console.error("Error fetching storage", error);
+     }
+    };
+
+
+    if (token) fetchStorage();
+
+    
+  }, [token]);
+
+  const { used_bytes, limit_bytes } = storage;
+
+  const usedGB = used_bytes / (1024 * 1024 * 1024);
+  const limitGB = limit_bytes / (1024 * 1024 * 1024);
+  const remainingGB = Math.max(limitGB - usedGB, 0);
+  const percentage = limit_bytes > 0 ? Math.min(Math.round((used_bytes / limit_bytes) * 100), 100) : 0;
   return (
     <div className="flex flex-col justify-between mt-4 p-4 sm:p-6 w-full min-w-0 bg-zinc-900 border border-zinc-800/80 rounded-3xl text-white shadow-lg">
       
@@ -14,7 +44,7 @@ function StorageCard({ usedGB = 1.2, totalGB = 2.0 }) {
           </div>
           <div className="flex flex-col gap-1 min-w-0">
             <h3 className="text-xl sm:text-2xl font-bold leading-tight text-zinc-100 truncate">Storage Usage</h3>
-            <p className="text-xs sm:text-sm text-zinc-400 truncate">Total Storage: {totalGB} GB</p>
+            <p className="text-xs sm:text-sm text-zinc-400 truncate">Total Storage: {limitGB.toFixed(2)} GB</p>
           </div>
         </div>
 
@@ -37,11 +67,11 @@ function StorageCard({ usedGB = 1.2, totalGB = 2.0 }) {
       {/* Bottom Breakdown */}
       <div className="flex justify-between items-center text-sm text-zinc-400 gap-2">
         <span className="min-w-0 truncate">
-          <strong className="text-xl sm:text-2xl font-bold text-zinc-100 mr-1">{usedGB} GB</strong> 
+          <strong className="text-xl sm:text-2xl font-bold text-zinc-100 mr-1">{usedGB.toFixed(2)} GB</strong> 
           used
         </span>
         <span className="min-w-0 truncate">
-          <strong className="text-xl sm:text-2xl font-bold text-zinc-100 mr-1">{(totalGB - usedGB).toFixed(1)} GB</strong> 
+          <strong className="text-xl sm:text-2xl font-bold text-zinc-100 mr-1">{(remainingGB).toFixed(2)} GB</strong> 
           remaining
         </span>
       </div>

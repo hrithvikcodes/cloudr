@@ -1,4 +1,4 @@
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 from app.models.song import Song
@@ -47,5 +47,10 @@ async def delete_song(db: AsyncSession, song_id: uuid.UUID):
         await db.commit()
     return song_to_delete
 
+async def get_user_storage(db:AsyncSession, user_id: uuid.UUID):
+    result = await db.execute(
+        select(func.coalesce(func.sum(Song.file_size_bytes), 0)).where(Song.user_id == user_id)
+    )
+    return result.scalar_one_or_none()
 
     

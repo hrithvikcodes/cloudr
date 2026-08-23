@@ -4,7 +4,7 @@ import QueueCard from '../components/queue/QueueCard';
 import SmartClassifyToggle from '../components/smart_classify/SmartClassifyToggle';
 
 
-function Upload({userId, token}) {
+function Upload({token}) {
   const [smartClassify, setSmartClassify] = useState(false);
   const [upload, setUpload] = useState([]);
   
@@ -35,11 +35,14 @@ function Upload({userId, token}) {
         body: JSON.stringify({
           filename: file.name,
           content_type: file.type,
+          file_size_bytes: file.size,
         })
       });
 
       if(!presignRes.ok){
-        console.error("Presign failed: ", presignRes.statusText);
+        const errBody = await presignRes.json().catch(()=> null);
+        console.error("Presign failed: ", presignRes.status, errBody);
+        alert(errBody?.detail || 'Upload failed. Please try again');
         return;
       }
 
@@ -124,7 +127,7 @@ function Upload({userId, token}) {
       const isAudio = allowedExtensions.some(ext => file_name.endsWith(ext));
 
       if (isAudio) {
-        console.log("Accepted audio file via browser:", file.name);
+        
         uploadSong(file); 
       } else {
         console.warn(`Rejected invalid file format: ${file.name}`);
@@ -170,7 +173,7 @@ function Upload({userId, token}) {
       {/* Bottom Cards */}
       <div className='flex flex-col lg:flex-row gap-6 lg:gap-10'>
         <div className='flex-1 min-w-0'>
-          <StorageCard />
+          <StorageCard token={token}/>
         </div>
         <div className='flex-1 min-w-0'>
           <QueueCard upload = {upload}/>

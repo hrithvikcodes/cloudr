@@ -5,7 +5,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
-from app.crud.song import create_song, get_song_by_id, get_songs_by_user, delete_song
+from app.crud.song import create_song, get_song_by_id, get_songs_by_user, delete_song, get_user_storage
 from app.schemas.song import SongOut
 from app.schemas.song import PresignUploadResponse, PresignUploadRequest, ConfirmUploadRequest
 from app.core.r2 import r2_client
@@ -22,6 +22,16 @@ async def presign_upload(
 ):
     ext = os.path.splitext(payload.filename)[1]
     key = f"songs/{current_user}/{uuid.uuid4()}{ext}"
+
+    current_usage = await get_user_storage(db=db, user_id=uuid.UUID(current_user))
+
+    current_usage_bytes = current_usage or 0
+    file_size_bytes = payload.file_size_bytes or 0
+    if int(current_usage_bytes) + int(file_size_bytes) >= settings.MAX_STORAGE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Storage limit exceeded",
+        )
 
     upload_url = r2_client.generate_presigned_url(
         "put_object",
@@ -133,3 +143,11 @@ async def remove_song(
     except Exception:
         pass
     return deleted_song
+
+@router.get("/storage/me",status_code=status.HTTP_200_OK)
+async def get_my_storage(db:AsyncSession=Depends(get_db), current_user: str = Depends(get_current_user)):
+    used_bytes = await get_user_storage(db, uuid.UUID(current_user))
+    return {
+        "used_bytes": used_bytes,
+        "limit_bytes": settings.MAX_STORAGE_BYTES,
+    }

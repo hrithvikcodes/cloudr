@@ -13,13 +13,11 @@ class SongBase(BaseModel):
 class SongCreate(SongBase):
     title: str | None = None
     artist: str | None = None
-    # user_id comes from auth later, not client input
-    # NOTE: file_path/file_size_bytes/duration_seconds will move to
-    # server-derived values once real file upload is built — fine for now
-    # since you're testing with manual inserts.
+    
 class PresignUploadRequest(BaseModel):
     filename: str
     content_type: str
+    file_size_bytes: int
 
 class PresignUploadResponse(BaseModel):
     upload_url: str

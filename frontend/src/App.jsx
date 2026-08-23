@@ -100,7 +100,7 @@ function App() {
         <Routes>
           <Route path="/" element={ userId ? (
             <div className='flex flex-col gap-8'>
-              <Header />
+              <Header token={accessToken} />
               <LibraryStats />
               <Recent userId={userId} onPlaySong={playSong} token={accessToken}/>
             </div>) : <Navigate to="/login" replace/>

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     R2_TOKEN_VALUE: str
     SUPABSE_JWT_SECRET: str
     SUPABASE_JWKS_URL: str
+    MAX_STORAGE_BYTES: int
 
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
