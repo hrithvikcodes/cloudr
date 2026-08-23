@@ -5,15 +5,20 @@ import { supabase } from '../supabaseClient';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const [isLoading, setIsLoading] = useState(false)
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) alert(error.message);
+    if (error) {
+      alert(error.message);
+      setIsLoading(false);
+      return;
+    };
   };
 
   return (
@@ -52,6 +57,7 @@ function Login() {
                 className="w-full px-4 py-2.5 rounded-lg bg-neutral-800/80 border border-neutral-700/60 text-white placeholder-neutral-500 focus:outline-none focus:border-[#ff7a00] transition"
                 value={email}
                 onChange={(e) => {setEmail(e.target.value)}}
+                disabled={isLoading}
                 />
             </div>
 
@@ -66,15 +72,24 @@ function Login() {
                 value={password}
                 onChange={(e) => {setPassword(e.target.value)}}
                 className="w-full px-4 py-2.5 rounded-lg bg-neutral-800/80 border border-neutral-700/60 text-white placeholder-neutral-500 focus:outline-none focus:border-[#ff7a00] transition"
+                disabled={isLoading}
               />
             </div>
 
             <button
               type="submit"
+              disabled={isLoading}
               className="mt-3 w-full bg-[#ff7a00] hover:bg-[#e06b00] text-white font-semibold py-2.5 rounded-lg transition duration-200 active:scale-[0.98]"
               
             >
-              Login
+              {isLoading ? (
+                <span className='flex items-center justify-center gap-2'>
+                  <i className='fa-solid fa-circle-notch fa-spin'></i>
+                  Logging in..
+                </span>
+              ) : (
+                'Login'
+              )}
             </button>
           </form>
 

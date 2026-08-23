@@ -33,7 +33,7 @@ function Recent({userId, onPlaySong, token}) {
                 console.error("Error fetching recent", error);
             }
         };
-        if (userId) fetchRecents();
+        if (userId && token) fetchRecents();
     },[userId, token])
   return (
     <div className='flex flex-col p-4 sm:p-6'>
