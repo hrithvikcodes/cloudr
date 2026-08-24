@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import bgImage from '../assets/login-bg.png'; 
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient'
+import { API_URL } from '../api';
+import { Link } from 'react-router-dom';
 
 function Signup() {
   const [email, setEmail] = useState('');
@@ -22,7 +24,7 @@ function Signup() {
   }
 
   
-  const res = await fetch('http://localhost:8000/user/signup', {
+  const res = await fetch(`${API_URL}/user/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -139,9 +141,9 @@ function Signup() {
           {/* Footer Link */}
           <p className="text-sm text-center text-neutral-400 mt-6">
             Already have an account?{' '}
-            <a href="http://localhost:5173/login" className="text-[#ff7a00] hover:underline font-medium">
+            <Link to="/login" className="text-[#ff7a00] hover:underline font-medium">
               Log in
-            </a>
+            </Link>
           </p>
         </div>
       </div>

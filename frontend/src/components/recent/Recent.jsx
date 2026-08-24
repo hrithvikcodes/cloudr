@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import RecentCard from './RecentCard.jsx'
+import { API_URL } from '../../api.js';
 
 function formatDuration(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -19,7 +20,7 @@ function Recent({userId, onPlaySong, token}) {
     useEffect(() => {
         const fetchRecents = async () => {
             try {
-                const res = await fetch(`http://localhost:8000/recent/songs`,{
+                const res = await fetch(`${API_URL}/recent/songs`,{
                     method: 'GET',
                     headers: {
                       'Authorization': `Bearer ${token}`

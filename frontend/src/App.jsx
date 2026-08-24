@@ -96,7 +96,7 @@ function App() {
       {!isAuthPage && <LeftNav onLogout={handleLogout}/>}
 
       {/* Main Content Area  */}
-      <div className='flex-1 flex flex-col p-4 sm:p-6 lg:p-8 pb-32 lg:pb-36 min-w-0'>
+      <div className='flex-1 flex flex-col p-4 sm:p-6 lg:p-8 pb-32 lg:pb-36 min-w-0 overflow-y-auto'>
         <Routes>
           <Route path="/" element={ userId ? (
             <div className='flex flex-col gap-8'>

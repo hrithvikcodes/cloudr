@@ -4,7 +4,7 @@ function SongCard({ name, artist, duration, size,onClick, isLiked, onLikeClick, 
   return (
     <div className='relative flex flex-col justify-between w-full p-4 sm:p-6 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl shadow-lg transition-all group cursor-pointer'>
       
-      {/* Top Section: Like Button or Cross Button */}
+      {/* */}
       <div className='absolute top-4 right-4 z-10'>
         <button onClick={(e)=>{
           e.stopPropagation();
@@ -22,7 +22,7 @@ function SongCard({ name, artist, duration, size,onClick, isLiked, onLikeClick, 
         </button>
       </div>
 
-      {/* Middle Section: Play Icon + Song & Artist Info */}
+      {/*  */}
       <div className='flex flex-row items-center gap-3 sm:gap-4 min-w-0 mt-4 sm:mt-6 mb-4 sm:mb-6 pr-8'>
         <button className='flex items-center justify-center w-10 sm:w-12 h-10 sm:h-12 bg-zinc-800/80 rounded-2xl group-hover:bg-[#ff7a00]/10 transition-colors shrink-0' onClick={onPlayClick}>
           <i className='fa-solid fa-play text-[#ff7a00] text-lg sm:text-xl group-hover:scale-110 transition-transform pl-0.5'></i>
@@ -38,7 +38,7 @@ function SongCard({ name, artist, duration, size,onClick, isLiked, onLikeClick, 
         </div>
       </div>
 
-      {/* Bottom Section: Duration & Size */}
+      {/*  */}
       <div className='flex flex-row items-center gap-3 text-zinc-500 text-xs sm:text-sm font-medium shrink-0'>
         <span>{duration}</span>
         <span>•</span>

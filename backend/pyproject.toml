@@ -10,9 +10,12 @@ dependencies = [
     "boto3>=1.43.77",
     "cryptography>=50.0.0",
     "fastapi[standard]>=0.140.0",
+    "httpx>=0.28.1",
     "imagekitio>=5.8.0",
     "mutagen>=1.48.1",
     "pydantic-settings>=2.14.2",
     "pyjwt>=2.13.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
     "sqlalchemy[asyncio]>=2.0.51",
 ]

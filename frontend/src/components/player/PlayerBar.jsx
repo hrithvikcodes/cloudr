@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { API_URL } from "../../api";
 
 function formatDuration(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -27,7 +28,7 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
 
     const loadStreamUrl = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/songs/${song.id}/stream`,{
+        const res = await fetch(`${API_URL}/songs/${song.id}/stream`,{
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -55,7 +56,7 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
 
   const postRecentSong = async (songId) => {
     try {
-      const res = await fetch(`http://localhost:8000/recent/${songId}`, {
+      const res = await fetch(`${API_URL}/recent/${songId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { API_URL } from '../../../api';
 
 function StorageCard({ token}) {
   
@@ -9,7 +10,7 @@ function StorageCard({ token}) {
   useEffect(()=> {
     const fetchStorage = async () => {
     try {  
-      const res = await fetch(`http://localhost:8000/songs/storage/me`, {
+      const res = await fetch(`${API_URL}/songs/storage/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }

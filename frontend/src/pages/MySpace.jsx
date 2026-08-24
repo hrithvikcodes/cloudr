@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import SongCard from '../components/myspace/SongCard'; 
+import { API_URL } from '../api';
 
 function formatDuration(seconds) {
   const m = Math.floor(seconds / 60);
@@ -25,7 +26,7 @@ function MySpace({userId, token, onPlaySong}) {
   useEffect(() => {
     const fetchLikes = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/liked/user/me`, {
+        const res = await fetch(`${API_URL}/liked/user/me`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -48,7 +49,7 @@ function MySpace({userId, token, onPlaySong}) {
 
     try {
       if (isLiked) {
-        await fetch(`http://localhost:8000/liked/${songId}`, {
+        await fetch(`${API_URL}/liked/${songId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -61,7 +62,7 @@ function MySpace({userId, token, onPlaySong}) {
         });
       } else {
         
-        await fetch(`http://localhost:8000/liked/${songId}`, {
+        await fetch(`${API_URL}/liked/${songId}`, {
           method: 'POST', 
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -77,7 +78,7 @@ function MySpace({userId, token, onPlaySong}) {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/songs/user/me`, {
+        const res = await fetch(`${API_URL}/songs/user/me`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -105,7 +106,7 @@ function MySpace({userId, token, onPlaySong}) {
   const handleDelete = async (songId) => {
     if (!songId) return console.error("No songId provided"); 
     try {
-      const res = await fetch(`http://localhost:8000/songs/${songId}`, {
+      const res = await fetch(`${API_URL}/songs/${songId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import bgImage from '../assets/login-bg.png'; 
 import { supabase } from '../supabaseClient';
+import { Link } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -96,9 +97,9 @@ function Login() {
           {/* Footer */}
           <p className="text-sm text-center text-neutral-400 mt-6">
             Don't have an account?{' '}
-            <a href="http://localhost:5173/signup" className="text-[#ff7a00] hover:underline font-medium">
+            <Link to="/signup" className="text-[#ff7a00] hover:underline font-medium">
               Signup
-            </a>
+            </Link>
           </p>
         </div>
       </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import StorageCard from '../components/header/storage/StorageCard';
 import QueueCard from '../components/queue/QueueCard';
 import SmartClassifyToggle from '../components/smart_classify/SmartClassifyToggle';
+import { API_URL } from '../api';
 
 
 function Upload({token}) {
@@ -23,8 +24,18 @@ function Upload({token}) {
     });
   };
 
+  const getUUID = async () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+  } 
+
   const uploadSong = async (file) => {
-    const tempId = crypto.randomUUID();
+    //const tempId = crypto.randomUUID();
+    const tempId = getUUID();
     const cleanTitle = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
 
     setUpload((prev) => [...prev, { id: tempId, title: cleanTitle, status: 'uploading' }]);
@@ -34,7 +45,7 @@ function Upload({token}) {
     };
 
     try {
-      const presignRes = await fetch(`http://localhost:8000/songs/presign-upload`,{
+      const presignRes = await fetch(`${API_URL}/songs/presign-upload`,{
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -76,7 +87,7 @@ function Upload({token}) {
 
       const durationSeconds = await getAudioDuration(file);
 
-      const confirmRes = await fetch(`http://localhost:8000/songs/confirm-upload`, {
+      const confirmRes = await fetch(`${API_URL}/songs/confirm-upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization':`Bearer ${token}` },
         body: JSON.stringify({

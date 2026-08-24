@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import StatCard from './StatCard.jsx'
+import { API_URL } from '../../api.js';
 
 function LibraryStats({token}) {
 
@@ -10,12 +11,12 @@ function LibraryStats({token}) {
     const fetchCounts = async () => {
       try {
         const [songsRes, likedRes] = await Promise.all([
-          fetch(`http://localhost:8000/songs/count/me`, {
+          fetch(`${API_URL}/songs/count/me`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
           }),
-          fetch(`http://localhost:8000/liked/count`, {
+          fetch(`${API_URL}/liked/count`, {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
         ]);
