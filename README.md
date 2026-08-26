@@ -23,11 +23,11 @@ A fully deployed, full-stack personal music streaming platform.
  * **Frontend** : React + Vite, Tailwind CSS
  * **Backend** : FastAPI
  * **Cloud Storage** : Cloudflare R2
- * **Database** : SQLAlchemy(async) +  PostgreSQL
- * **Auth** : Supabase and backend JWT verification
+ * **Database** : SQLAlchemy (async) +  PostgreSQL
+ * **Auth** : Supabase and backend JWT verification via JWKS (JSON Web Key Set)
  * **Containerization** : Docker
  * **S3 compatible** : boto3(R2)
- * **Audio Metadata** : mutagen
+ * **Audio Metadata** : Mutagen
 
 ## Project Structure
 ```text
