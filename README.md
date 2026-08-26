@@ -2,19 +2,20 @@
 
 A fully deployed, full-stack personal music streaming platform.
 
-* **Frontend URL:** [`https://cloudr.pages.dev`](https://cloudr.pages.dev)
-* **Backend URL:** [`https://cloudr-sg.onrender.com`](https://cloudr-sg.onrender.com)
+* **Frontend URL:** [https://cloudr.pages.dev](https://cloudr.pages.dev)
+* **Backend URL:** [https://cloudr-sg.onrender.com](https://cloudr-sg.onrender.com)
 
 ## System Architecture
 
-<img width="751" alt="architecture" src="https://github.com/user-attachments/assets/7872d678-15c7-40a4-a01d-a9ab6c654f13" />
+<img width="751" height="565" alt="architecture drawio" src="https://github.com/user-attachments/assets/bf2a8157-3f54-47b8-87fa-392c6eabce5c" />
+
 
 ## Key Features
 
-* **Auth:** Supabase-based signup/login with JWT verification on the backend.
-* **Upload:** Drag-and-drop audio upload using a `presign → direct R2 PUT → confirm` workflow to bypass backend server bottlenecks.
+* **Auth:** Secure authentication using Supabase Auth with backend JWT verification via JWKS.
+* **Upload:** Direct browser to R2 uploads using a `Presign → Upload (direct R2 PUT)  → Confirm` workflow eliminating backend upload bottlenecks.
 * **Library Management:** My Space and Liked pages for browsing, searching, deleting, and liking songs.
-* **Playback:** Persistent player bar streaming via signed R2 URLs with playback history logging.
+* **Playback:** Stream audio through signed Cloudflare R2 URLs with recently played history tracking.
 * **Storage Quotas:** Per user quota enforcement on upload (`MAXIMUM_STORAGE_PER_USER`).
 * **Storage Cleanup:** Automated deletion of media files from Cloudflare R2 when removed by a user.
 
