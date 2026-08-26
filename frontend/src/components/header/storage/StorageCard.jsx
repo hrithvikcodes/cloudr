@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { API_URL } from '../../../api';
 
-function StorageCard({ token}) {
+function StorageCard({ token, refreshKey}) {
   
 
   const [storage, setStorage] = useState({used_bytes: 0, limit_bytes: 0});
@@ -26,7 +26,7 @@ function StorageCard({ token}) {
     if (token) fetchStorage();
 
     
-  }, [token]);
+  }, [token, refreshKey]);
 
   const { used_bytes, limit_bytes } = storage;
 

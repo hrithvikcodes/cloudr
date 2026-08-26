@@ -8,6 +8,7 @@ import { API_URL } from '../api';
 function Upload({token}) {
   const [smartClassify, setSmartClassify] = useState(false);
   const [upload, setUpload] = useState([]);
+  const [storageRefresh, setStorageRefresh] = useState(0);
   
   const allowedExtensions = ['.mp3', '.wav', '.aiff', '.flac', '.alac', '.aac', '.ogg'];
 
@@ -101,6 +102,7 @@ function Upload({token}) {
 
       if (confirmRes.ok) {
         updateStatus('done');
+        setStorageRefresh((prev) => prev + 1)
       } else {
          console.error("Confirm failed:", confirmRes.statusText);
          updateStatus('error');
@@ -194,7 +196,7 @@ function Upload({token}) {
       {/* Bottom Cards */}
       <div className='flex flex-col lg:flex-row gap-6 lg:gap-10'>
         <div className='flex-1 min-w-0'>
-          <StorageCard token={token}/>
+          <StorageCard token={token} refreshKey={storageRefresh}/>
         </div>
         <div className='flex-1 min-w-0'>
           <QueueCard upload = {upload}/>
