@@ -50,7 +50,14 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
   
   useEffect(() => {
     if (streamUrl && audioRef.current) {
-      audioRef.current.play();
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true)
+        })
+        .catch((err) => {
+          console.error("Playback failed: ",err);
+          setIsPlaying(false);
+        })
     }
   }, [streamUrl]);
 
@@ -71,11 +78,16 @@ export default function PlayerBar({song, userId, queue, onSongEnd, onPlayNext, p
 
   const togglePlay = () => {
     if (audioRef.current?.paused) {
-      audioRef.current.play();
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.error("Playback failed: ", err));
     } else {
       audioRef.current.pause();
+      setIsPlaying(false);
     }
   }
+
+  
 
   return (
     <div
