@@ -1,6 +1,7 @@
 
 import jwt
 from fastapi import Header, HTTPException, status
+from fastapi.concurrency import run_in_threadpool
 from app.core.config import settings
 from jwt import PyJWKClient
 
@@ -13,7 +14,7 @@ async def get_current_user(authorization: str = Header(...)) -> str :
     token = authorization.removeprefix("Bearer ")
 
     try:
-        signing_key = _jwks_client.get_signing_key_from_jwt(token)
+        signing_key = await run_in_threadpool(_jwks_client.get_signing_key_from_jwt,token)
         payload = jwt.decode(
             token,
             signing_key.key,

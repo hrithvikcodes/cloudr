@@ -8,10 +8,7 @@ from alembic import context
 
 from app.core.db import Base
 from app.core.config import settings
-from app.models.user import User
-from app.models.song import Song
-from app.models.liked import Liked
-from app.models.recently_played import RecentlyPlayed
+import app.models
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -75,6 +72,8 @@ async def run_migrations_online() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args={"statement_cache_size": 0},
+
     )
 
     async with connectable.connect() as connection:

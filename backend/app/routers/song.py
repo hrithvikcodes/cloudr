@@ -3,6 +3,7 @@ from app.core.config import settings
 import os
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
 from app.crud.song import create_song, get_song_by_id, get_songs_by_user, delete_song, get_user_storage, count_songs_by_user
@@ -55,7 +56,7 @@ async def confirm_upload(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Key does not belong to current user")
 
     try:
-        head = r2_client.head_object(Bucket=R2_BUCKET_NAME, Key=payload.key)
+        head = await run_in_threadpool(r2_client.head_object,Bucket=R2_BUCKET_NAME, Key=payload.key)
     except r2_client.exceptions.ClientError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Upload not found")
 
@@ -139,7 +140,7 @@ async def remove_song(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Song not found")
 
     try:
-        r2_client.delete_object(Bucket=R2_BUCKET_NAME, Key=deleted_song.file_path)
+       await run_in_threadpool(r2_client.delete_object,Bucket=R2_BUCKET_NAME, Key=deleted_song.file_path)
     except Exception:
         pass
     return deleted_song

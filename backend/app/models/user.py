@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from app.models.song import Song
     from app.models.liked import Liked
     from app.models.recently_played import RecentlyPlayed
+    from app.models.playlists import Playlists
 class User(Base):
     __tablename__ = "users"
 
@@ -17,3 +18,4 @@ class User(Base):
     songs: Mapped[List["Song"]] = relationship(back_populates="user")
     liked_songs: Mapped[List["Liked"]] = relationship(back_populates="user")
     recently_played: Mapped[List["RecentlyPlayed"]] = relationship(back_populates="user")
+    playlists: Mapped[List["Playlists"]] = relationship(back_populates="user")

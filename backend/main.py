@@ -1,8 +1,9 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from app.core import db
 from contextlib import asynccontextmanager
-
+import time 
+import logging
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import song, liked, user, recent
 
@@ -13,6 +14,16 @@ async def lifespan(app: FastAPI):
     await db.engine.dispose()
 
 app = FastAPI(lifespan=lifespan)
+logger = logging.getLogger("timing")
+logging.basicConfig(level=logging.INFO)
+@app.middleware("http")
+async def add_timing_header(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration = time.perf_counter() - start
+    logger.info(f"{request.method} {request.url.path} took {duration:.3f}s")
+    response.headers["X-Process-Time"] = f"{duration:.3f}"
+    return response
 
 app.add_middleware(
     CORSMiddleware,

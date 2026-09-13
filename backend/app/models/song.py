@@ -9,11 +9,12 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.liked import Liked
     from app.models.recently_played import RecentlyPlayed
+    from app.models.playlist_songs import PlaylistSongs
 class Song(Base):
     __tablename__ = "songs"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     artist: Mapped[str] = mapped_column(String(255), nullable=True)
     duration_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -27,3 +28,4 @@ class Song(Base):
     user: Mapped["User"] = relationship(back_populates="songs")
     liked_by: Mapped[List["Liked"]] = relationship(back_populates="song", cascade="all, delete-orphan")
     play_history: Mapped[List["RecentlyPlayed"]] = relationship(back_populates="song", cascade="all, delete-orphan")
+    playlist_songs: Mapped[List["PlaylistSongs"]] = relationship(back_populates="song",cascade="all, delete-orphan")
