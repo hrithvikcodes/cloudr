@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
@@ -20,11 +21,11 @@ async def create_song(
         duration_seconds = duration_seconds,
         file_size_bytes = file_size_bytes,
         file_path = file_path,
-        mime_type = mime_type
+        mime_type = mime_type,
+        created_at = datetime.now(timezone.utc)
     )
     db.add(new_song)
     await db.commit()
-    await db.refresh(new_song)
     return new_song
 
 async def get_song_by_id(db: AsyncSession, song_id: uuid.UUID):

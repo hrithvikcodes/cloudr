@@ -11,6 +11,10 @@ from app.schemas.song import SongOut
 from app.schemas.song import PresignUploadResponse, PresignUploadRequest, ConfirmUploadRequest
 from app.core.r2 import r2_client
 from app.core.r2 import R2_BUCKET_NAME
+import time
+import logging
+
+logger = logging.getLogger("timing")
 
 router = APIRouter(prefix="/songs", tags=["songs"])
 
@@ -46,6 +50,8 @@ async def presign_upload(
     return {'upload_url': upload_url, 'key': key}
 
 
+
+
 @router.post("/confirm-upload", status_code=status.HTTP_201_CREATED, response_model=SongOut)
 async def confirm_upload(
     payload: ConfirmUploadRequest,
@@ -55,10 +61,12 @@ async def confirm_upload(
     if not payload.key.startswith(f"songs/{current_user}/"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Key does not belong to current user")
 
+    t0 = time.perf_counter()
     try:
-        head = await run_in_threadpool(r2_client.head_object,Bucket=R2_BUCKET_NAME, Key=payload.key)
+        head = await run_in_threadpool(r2_client.head_object, Bucket=R2_BUCKET_NAME, Key=payload.key)
     except r2_client.exceptions.ClientError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Upload not found")
+    t1 = time.perf_counter()
 
     file_size_bytes = head["ContentLength"]
     final_title = payload.title or os.path.splitext(os.path.basename(payload.key))[0]
@@ -73,8 +81,10 @@ async def confirm_upload(
         file_path=payload.key,
         mime_type=payload.content_type,
     )
-    return song
+    t2 = time.perf_counter()
 
+    logger.info(f"confirm_upload: head_object={t1-t0:.3f}s create_song={t2-t1:.3f}s")
+    return song
 
 @router.get("/{song_id}/stream")
 async def stream_song(
