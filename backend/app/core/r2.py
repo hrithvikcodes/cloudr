@@ -8,7 +8,8 @@ r2_client = boto3.client(
     endpoint_url = settings.R2_ENDPOINT_URL,
     aws_access_key_id = settings.R2_ACCESS_KEY_ID,
     aws_secret_access_key = settings.R2_SECRET_ACCESS_KEY,
-    config=Config(signature_version="s3v4"),
+    config=Config(signature_version="s3v4",max_pool_connections=20),
+    
     
 
 )
