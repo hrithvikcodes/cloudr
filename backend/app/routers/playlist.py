@@ -1,4 +1,3 @@
-
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +6,6 @@ from pydantic import BaseModel
 from app.models.song import Song
 from app.core.db import get_db
 from app.core.auth import get_current_user
-from app.models.user import User
 from app.crud.playlists import (
     get_playlist_by_id,
     get_playlists_for_user,
@@ -51,23 +49,22 @@ class SongOut(BaseModel):
         from_attributes = True
 
 
-
-async def _get_owned_playlist(db: AsyncSession, playlist_id: uuid.UUID, user: User):
+async def _get_owned_playlist(db: AsyncSession, playlist_id: uuid.UUID, user_id: uuid.UUID):
     playlist = await get_playlist_by_id(db, playlist_id)
     if not playlist:
         raise HTTPException(status_code=404, detail="Playlist not found")
-    if playlist.user_id != user.id:
-        raise HTTPException(status_code=403, detail="Not your playlist")
+    if playlist.user_id != user_id:
+        raise HTTPException(status_code=404, detail="Playlist not found")
     return playlist
-
 
 
 @router.get("", response_model=list[PlaylistOut])
 async def list_playlists(
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id_raw: str = Depends(get_current_user),
 ):
-    rows = await get_playlists_for_user(db, user.id)
+    user_id = uuid.UUID(user_id_raw)
+    rows = await get_playlists_for_user(db, user_id)
     return [
         PlaylistOut(id=playlist.id, name=playlist.name, song_count=count)
         for playlist, count in rows
@@ -78,9 +75,10 @@ async def list_playlists(
 async def create_playlist_route(
     body: PlaylistCreate,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id_raw: str = Depends(get_current_user),
 ):
-    playlist = await create_playlist(db, user.id, body.name)
+    user_id = uuid.UUID(user_id_raw)
+    playlist = await create_playlist(db, user_id, body.name)
     return PlaylistOut(id=playlist.id, name=playlist.name, song_count=0)
 
 
@@ -89,9 +87,10 @@ async def rename_playlist_route(
     playlist_id: uuid.UUID,
     body: PlaylistRename,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id_raw: str = Depends(get_current_user),
 ):
-    playlist = await _get_owned_playlist(db, playlist_id, user)
+    user_id = uuid.UUID(user_id_raw)
+    playlist = await _get_owned_playlist(db, playlist_id, user_id)
     playlist = await rename_playlist(db, playlist, body.name)
     songs = await get_songs_in_playlist(db, playlist_id)
     return PlaylistOut(id=playlist.id, name=playlist.name, song_count=len(songs))
@@ -101,9 +100,10 @@ async def rename_playlist_route(
 async def delete_playlist_route(
     playlist_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id_raw: str = Depends(get_current_user),
 ):
-    playlist = await _get_owned_playlist(db, playlist_id, user)
+    user_id = uuid.UUID(user_id_raw)
+    playlist = await _get_owned_playlist(db, playlist_id, user_id)
     await delete_playlist(db, playlist)
 
 
@@ -111,9 +111,10 @@ async def delete_playlist_route(
 async def list_playlist_songs(
     playlist_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id_raw: str = Depends(get_current_user),
 ):
-    await _get_owned_playlist(db, playlist_id, user)  # ownership check, discard result
+    user_id = uuid.UUID(user_id_raw)
+    await _get_owned_playlist(db, playlist_id, user_id)
     rows = await get_songs_in_playlist(db, playlist_id)
     return [row.song for row in rows]
 
@@ -123,15 +124,16 @@ async def add_song_route(
     playlist_id: uuid.UUID,
     body: AddSongRequest,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id_raw: str = Depends(get_current_user),
 ):
-    await _get_owned_playlist(db, playlist_id, user)
+    user_id = uuid.UUID(user_id_raw)
+    await _get_owned_playlist(db, playlist_id, user_id)
 
     song = await db.get(Song, body.song_id)
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
-    if song.user_id != user.id:
-        raise HTTPException(status_code=404, detail="Song not found")  # not 403 — see below
+    if song.user_id != user_id:
+        raise HTTPException(status_code=404, detail="Song not found")
 
     try:
         await add_songs_to_playlist(db, playlist_id, body.song_id)
@@ -147,9 +149,10 @@ async def remove_song_route(
     playlist_id: uuid.UUID,
     song_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id_raw: str = Depends(get_current_user),
 ):
-    await _get_owned_playlist(db, playlist_id, user)
+    user_id = uuid.UUID(user_id_raw)
+    await _get_owned_playlist(db, playlist_id, user_id)
     removed = await remove_song_from_playlist(db, playlist_id, song_id)
     if not removed:
         raise HTTPException(status_code=404, detail="Song not in playlist")
