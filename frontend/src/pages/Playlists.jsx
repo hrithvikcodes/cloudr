@@ -173,53 +173,63 @@ function PlaylistDetail({ playlist, token, onBack, onPlaySong, onPlaylistUpdated
   const [nameDraft, setNameDraft] = useState(playlist.name);
 
   const fetchSongs = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/playlists/${playlist.id}/songs`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      setSongs(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching playlist songs:', error);
-      setSongs([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const res = await fetch(`${API_URL}/playlists/${playlist.id}/songs`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : [];
+    setSongs(list);
+    return list;
+  } catch (error) {
+    console.error('Error fetching playlist songs:', error);
+    setSongs([]);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchSongs();
   }, [playlist.id]);
 
   const handleAddSong = async (songId) => {
-    try {
-      const res = await fetch(`${API_URL}/playlists/${playlist.id}/songs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ song_id: songId }),
-      });
-      if (res.ok) fetchSongs();
-      else console.error('Failed to add song, status:', res.status);
-    } catch (error) {
-      console.error('Error adding song:', error);
+  try {
+    const res = await fetch(`${API_URL}/playlists/${playlist.id}/songs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ song_id: songId }),
+    });
+    if (res.ok) {
+      const updatedList = await fetchSongs();
+      onPlaylistUpdated({ ...playlist, song_count: updatedList.length });
+    } else {
+      console.error('Failed to add song, status:', res.status);
     }
-  };
+  } catch (error) {
+    console.error('Error adding song:', error);
+  }
+};
 
   const handleRemoveSong = async (songId) => {
-    try {
-      const res = await fetch(`${API_URL}/playlists/${playlist.id}/songs/${songId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+  try {
+    const res = await fetch(`${API_URL}/playlists/${playlist.id}/songs/${songId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      setSongs((prev) => {
+        const next = prev.filter((s) => s.id !== songId);
+        onPlaylistUpdated({ ...playlist, song_count: next.length });
+        return next;
       });
-      if (res.ok) setSongs((prev) => prev.filter((s) => s.id !== songId));
-    } catch (error) {
-      console.error('Error removing song:', error);
     }
-  };
+  } catch (error) {
+    console.error('Error removing song:', error);
+  }
+};
 
   const handleRename = async () => {
     setEditingName(false);
