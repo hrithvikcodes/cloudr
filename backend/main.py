@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 import time 
 import logging
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import song, liked, user, recent
+from app.routers import song, liked, user, recent, playlist
 
 @asynccontextmanager
 
@@ -40,6 +40,7 @@ app.include_router(song.router)
 app.include_router(user.router)
 app.include_router(liked.router)
 app.include_router(recent.router)
+app.include_router(playlist.router)
 @app.get("/health")
 async def health_check():
     return {"status": "OK"}

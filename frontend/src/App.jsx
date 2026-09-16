@@ -108,7 +108,7 @@ function App() {
           
           <Route path="/myspace" element={userId ? <MySpace userId={userId} token={accessToken} onPlaySong ={playSong} /> : <Navigate to="/login" replace />} />
           <Route path="/upload" element={userId ? <Upload userId={userId}  token={accessToken} /> : <Navigate to="/login" replace/>}/>
-          <Route path="/playlists" element={userId ? <Playlists /> : <Navigate to="/login" replace/>} />
+          <Route path="/playlists" element={userId ? <Playlists userId={userId} token={accessToken} onPlaySong={playSong} /> : <Navigate to="/login" replace/>} />
           <Route path="/liked" element={userId ? <Liked userId={userId}  token={accessToken} onPlaySong={playSong}/> : <Navigate to="/login" replace />} />
           <Route path='/signup' element={!userId ? <Signup /> : <Navigate to="/" replace/>}/>
           <Route path='/login' element={!userId ? <Login/> : <Navigate to="/" replace/>}/>
