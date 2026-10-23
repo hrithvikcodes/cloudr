@@ -4,7 +4,7 @@
 * **Backend URL:** [https://cloudr-sg.onrender.com](https://cloudr-sg.onrender.com)
 
 ## System Architecture
-<img width="1191" height="896" alt="system" src="https://github.com/user-attachments/assets/0d4c369b-3c45-4181-b0e0-0447198916e6" />
+<img width="1191" height="896" alt="cloudrun-mum-cloudr" src="https://github.com/user-attachments/assets/a29d8e8c-8f18-4475-bc39-3a5e765ff5fe" />
 
 
 
