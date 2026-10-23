@@ -1,7 +1,7 @@
 **Cloudr** is a high performance, cloud native music streaming platform built for seamless audio delivery. Designed with direct to cloud presigned R2 uploads and stateless JWT verification via JWKS, it provides low latency audio playback and full library management without backend storage or upload bottlenecks.
 
 * **Frontend URL:** [https://cloudr.pages.dev](https://cloudr.pages.dev)
-* **Backend URL:** [https://cloudr-sg.onrender.com](https://cloudr-sg.onrender.com)
+* **Backend URL:** [https://cloudr-1067389240045.asia-south1.run.app](https://cloudr-1067389240045.asia-south1.run.app)
 
 ## System Architecture
 <img width="1191" height="896" alt="cloudrun-mum-cloudr" src="https://github.com/user-attachments/assets/a29d8e8c-8f18-4475-bc39-3a5e765ff5fe" />
